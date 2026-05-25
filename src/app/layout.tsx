@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Roboto_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
-
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-geist-sans", // Overwriting the tailwind variable to avoid touching globals.css again
   subsets: ["latin"],
@@ -29,7 +30,11 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${spaceGrotesk.variable} ${robotoMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans selection:bg-black selection:text-white">{children}</body>
+      <body className="min-h-full flex flex-col font-sans selection:bg-black selection:text-white">
+        {children}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
