@@ -39,7 +39,7 @@ function AnimatedCounter({ value }: { value: number }) {
   return <span className="tabular-nums">{displayValue}</span>;
 }
 
-export function RankingBoard({ initialTeams, initialLogs }: { initialTeams: Team[], initialLogs: HistoryLog[] }) {
+export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: { initialTeams: Team[], initialLogs: HistoryLog[], kioskMode?: boolean }) {
   const [teams, setTeams] = useState<Team[]>(
     [...initialTeams].sort((a, b) => b.total_score - a.total_score)
   );
@@ -89,7 +89,7 @@ export function RankingBoard({ initialTeams, initialLogs }: { initialTeams: Team
   }, []);
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 flex flex-col gap-4 relative mt-4">
+    <div className={`w-full mx-auto p-4 flex flex-col gap-4 relative mt-4 ${kioskMode ? 'max-w-4xl mt-12' : 'max-w-md'}`}>
       <div className="flex flex-col items-center mb-6 gap-3">
         <div className="bg-black text-white px-4 py-1.5 border-brutal shadow-brutal transform -rotate-1">
           <h2 className="text-sm font-bold uppercase tracking-wider text-center">
@@ -104,7 +104,10 @@ export function RankingBoard({ initialTeams, initialLogs }: { initialTeams: Team
       <div className="flex flex-col gap-4 relative">
         <AnimatePresence>
           {teams.map((team, index) => {
-            const isFirst = index === 0;
+            const maxScore = teams.length > 0 ? teams[0].total_score : 0;
+            const isFirst = team.total_score === maxScore && maxScore > 0;
+            // Se a diferença for menor que 50 pontos, é disputa acirrada
+            const isCloseMatch = index === 1 && (maxScore - team.total_score > 0 && maxScore - team.total_score <= 50);
 
             return (
               <motion.div
@@ -135,7 +138,16 @@ export function RankingBoard({ initialTeams, initialLogs }: { initialTeams: Team
                 {/* Pos */}
                 <div className="flex-shrink-0 w-12 font-mono text-3xl font-bold flex items-center justify-center">
                   {isFirst ? (
-                    <Trophy className="w-10 h-10" style={{ color: team.color }} strokeWidth={2.5} />
+                    <div className="relative">
+                      <motion.div
+                        className="absolute -top-6 -left-3 text-2xl z-20"
+                        animate={{ scale: [1, 1.2, 1], rotate: [-15, 15, -15] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                      >
+                        👑
+                      </motion.div>
+                      <Trophy className="w-10 h-10" style={{ color: team.color }} strokeWidth={2.5} />
+                    </div>
                   ) : (
                     `#${index + 1}`
                   )}
@@ -155,6 +167,15 @@ export function RankingBoard({ initialTeams, initialLogs }: { initialTeams: Team
                   >
                     {team.name}
                   </h2>
+                  {isCloseMatch && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-xs font-bold text-red-600 bg-white inline-block px-2 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] mt-1"
+                    >
+                      🔥 NA COLA DO LÍDER!
+                    </motion.div>
+                  )}
                 </div>
 
                 <div className="flex-shrink-0 flex items-center gap-2 z-10">
@@ -182,7 +203,7 @@ export function RankingBoard({ initialTeams, initialLogs }: { initialTeams: Team
         </AnimatePresence>
       </div>
 
-      <PublicFeed logs={logs} />
+      <PublicFeed logs={logs} kioskMode={kioskMode} />
     </div>
   );
 }

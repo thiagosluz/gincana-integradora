@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { HistoryLog } from '@/types';
 
-export function PublicFeed({ logs }: { logs: HistoryLog[] }) {
+export function PublicFeed({ logs, kioskMode }: { logs: HistoryLog[], kioskMode?: boolean }) {
   const [showModal, setShowModal] = useState(false);
   
   // Exibe apenas os últimos 5
@@ -38,7 +38,7 @@ export function PublicFeed({ logs }: { logs: HistoryLog[] }) {
         )}
       </div>
 
-      {logs.length > 0 && (
+      {!kioskMode && logs.length > 0 && (
         <button 
           onClick={() => setShowModal(true)}
           className="mt-2 border-brutal bg-[var(--foreground)] text-[var(--background)] p-3 font-bold uppercase hover:bg-zinc-800 transition-colors shadow-brutal active:translate-y-1 active:translate-x-1 active:shadow-none cursor-pointer"
