@@ -136,7 +136,7 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                 )}
 
                 {/* Pos */}
-                <div className="flex-shrink-0 w-12 font-mono text-3xl font-bold flex items-center justify-center">
+                <div className="flex-shrink-0 w-8 md:w-12 font-mono text-2xl md:text-3xl font-bold flex items-center justify-center">
                   {isFirst ? (
                     <div className="relative">
                       <motion.div
@@ -146,7 +146,7 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                       >
                         👑
                       </motion.div>
-                      <Trophy className="w-10 h-10" style={{ color: team.color }} strokeWidth={2.5} />
+                      <Trophy className="w-8 h-8 md:w-10 md:h-10" style={{ color: team.color }} strokeWidth={2.5} />
                     </div>
                   ) : (
                     `#${index + 1}`
@@ -159,10 +159,10 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                   style={{ backgroundColor: team.color }}
                 />
 
-                <div className="ml-4 flex-grow z-10">
+                <div className="ml-2 md:ml-4 flex-grow z-10">
                   <h2
                     className={`font-bold uppercase tracking-tight ${
-                      isFirst ? 'text-3xl' : 'text-xl'
+                      isFirst ? 'text-xl md:text-3xl' : 'text-lg md:text-xl'
                     }`}
                   >
                     {team.name}
@@ -191,7 +191,7 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                   )}
                   <div
                     className={`font-mono font-bold text-right tabular-nums tracking-tighter ${
-                      isFirst ? 'text-5xl' : 'text-3xl'
+                      isFirst ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'
                     }`}
                   >
                     <AnimatedCounter value={team.total_score} />

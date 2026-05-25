@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { RankingBoard } from '@/components/RankingBoard';
 
+import type { Team, HistoryLog } from '@/types';
+
 // Opt out of caching so the initial load always fetches fresh data from DB
 export const revalidate = 0;
 
@@ -27,8 +29,8 @@ export default async function TelaoPage() {
         - Aumenta o tamanho da escala do layout
       */}
       <RankingBoard 
-        initialTeams={teams || []} 
-        initialLogs={(logs as any) || []} 
+        initialTeams={(teams as Team[]) || []} 
+        initialLogs={(logs as unknown as HistoryLog[]) || []} 
         kioskMode={true} 
       />
     </main>
