@@ -4,12 +4,56 @@ import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
+import crypto from 'crypto';
+import { headers } from 'next/headers';
+
 export async function login(password: string) {
-  if (password === process.env.ADMIN_PASSWORD) {
-    (await cookies()).set('admin_token', 'true', { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-    return { success: true };
+  const reqHeaders = await headers();
+  const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown';
+
+  // 1. Verificar Rate Limit (últimos 45 minutos)
+  const fortyFiveMinsAgo = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+  
+  const { data: attempts } = await supabaseAdmin
+    .from('login_attempts')
+    .select('id')
+    .eq('ip_address', ip)
+    .gte('created_at', fortyFiveMinsAgo);
+
+  if (attempts && attempts.length >= 5) {
+    return { success: false, error: 'Muitas tentativas erradas. Acesso bloqueado por 45 minutos.' };
   }
-  return { success: false, error: 'Senha incorreta' };
+
+  // 2. Comparação Segura (anti-timing attack)
+  const envPassword = process.env.ADMIN_PASSWORD || '';
+  const expectedBuffer = Buffer.from(envPassword);
+  const inputBuffer = Buffer.from(password);
+
+  let isMatch = false;
+  if (expectedBuffer.length === inputBuffer.length) {
+    isMatch = crypto.timingSafeEqual(expectedBuffer, inputBuffer);
+  } else {
+    // Comparação falsa para gastar o mesmo tempo computacional (evita vazar o tamanho da senha)
+    crypto.timingSafeEqual(expectedBuffer, expectedBuffer);
+  }
+
+  if (!isMatch) {
+    // 3. Tarpit: Registrar o erro e atrasar propositalmente 2 segundos
+    await supabaseAdmin.from('login_attempts').insert({ ip_address: ip });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    return { success: false, error: 'Senha incorreta' };
+  }
+
+  // Login bem-sucedido: Limpar histórico de erros do IP
+  await supabaseAdmin.from('login_attempts').delete().eq('ip_address', ip);
+
+  (await cookies()).set('admin_token', 'true', { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  
+  return { success: true };
 }
 
 export async function logout() {
