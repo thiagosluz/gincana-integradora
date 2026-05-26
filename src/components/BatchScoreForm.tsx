@@ -66,9 +66,12 @@ export function BatchScoreForm({ teams, activities }: { teams: Team[], activitie
                 <div className="flex items-center">
                   <span className="border-brutal border-r-0 bg-zinc-100 p-2 font-bold">+</span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="^-?[0-9]+(,[0-9]+)?$"
+                    title="Use apenas vírgula para decimais (ex: 2,5)"
                     name={`points_${team.id}`}
-                    defaultValue={0}
+                    defaultValue="0"
                     required
                     className="border-brutal p-2 font-mono text-lg bg-white focus:outline-none w-full"
                   />

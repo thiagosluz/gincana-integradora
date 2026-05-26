@@ -7,6 +7,12 @@ import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
 import { headers } from 'next/headers';
 
+function parseFloatLocal(value: string): number {
+  if (!value) return NaN;
+  const normalized = value.replace(',', '.');
+  return parseFloat(normalized);
+}
+
 export async function login(password: string) {
   const reqHeaders = await headers();
   const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown';
@@ -72,7 +78,7 @@ export async function addScore(formData: FormData) {
 
   if (!teamId || !pointsStr || !activityId) return { success: false, error: 'Preencha todos os campos' };
 
-  const points = parseInt(pointsStr, 10);
+  const points = parseFloatLocal(pointsStr);
   if (isNaN(points)) {
     return { success: false, error: 'Pontos inválidos' };
   }
@@ -143,7 +149,7 @@ export async function addBatchScores(formData: FormData) {
     const pointsStr = formData.get(`points_${team.id}`) as string;
     if (!pointsStr) continue;
     
-    const points = parseInt(pointsStr, 10);
+    const points = parseFloatLocal(pointsStr);
     if (points === 0 || isNaN(points)) continue; // Skip zero points
 
     updates.push({
@@ -275,7 +281,7 @@ export async function updateScoreLog(formData: FormData) {
   if (adminToken?.value !== 'true') return { success: false, error: 'Não autorizado' };
 
   const id = formData.get('id') as string;
-  const newPoints = parseInt(formData.get('points') as string, 10);
+  const newPoints = parseFloatLocal(formData.get('points') as string);
   
   if (!id || isNaN(newPoints)) return { success: false, error: 'Dados inválidos' };
 

@@ -13,7 +13,7 @@ type HistoryLog = {
 
 export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState<number>(0);
+  const [editValue, setEditValue] = useState<string>('0');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -34,7 +34,7 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
 
     const formData = new FormData();
     formData.append('id', id);
-    formData.append('points', editValue.toString());
+    formData.append('points', editValue);
     
     const res = await updateScoreLog(formData);
     
@@ -116,13 +116,16 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
                     <td className="p-3 text-right font-mono text-lg font-bold">
                       {isEditing ? (
                         <input 
-                          type="number" 
+                          type="text" 
+                          inputMode="decimal"
+                          pattern="^-?[0-9]+(,[0-9]+)?$"
+                          title="Use apenas vírgula para decimais (ex: 2,5)"
                           value={editValue} 
-                          onChange={(e) => setEditValue(parseInt(e.target.value) || 0)}
+                          onChange={(e) => setEditValue(e.target.value)}
                           className="border-brutal p-1 w-24 text-right font-mono bg-white"
                         />
                       ) : (
-                        log.points > 0 ? `+${log.points}` : log.points
+                        log.points > 0 ? `+${log.points.toString().replace('.', ',')}` : log.points.toString().replace('.', ',')
                       )}
                     </td>
                     <td className="p-3 text-right text-sm font-bold underline">
@@ -149,7 +152,7 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
                           <button 
                             onClick={() => {
                               setEditingId(log.id);
-                              setEditValue(log.points);
+                              setEditValue(log.points.toString().replace('.', ','));
                             }}
                             disabled={isProcessing}
                             className="text-blue-600 hover:text-blue-800 cursor-pointer"

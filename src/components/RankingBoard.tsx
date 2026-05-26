@@ -25,7 +25,7 @@ function AnimatedCounter({ value }: { value: number }) {
       const progress = Math.min((time - startTime) / duration, 1);
       // easeOutQuart
       const easeProgress = 1 - Math.pow(1 - progress, 4);
-      const current = Math.floor(start + (end - start) * easeProgress);
+      const current = start + (end - start) * easeProgress;
       setDisplayValue(current);
 
       if (progress < 1) {
@@ -38,7 +38,9 @@ function AnimatedCounter({ value }: { value: number }) {
     requestAnimationFrame(animate);
   }, [value, displayValue]);
 
-  return <span className="tabular-nums">{displayValue}</span>;
+  const formattedValue = displayValue.toFixed(1).replace('.0', '').replace('.', ',');
+
+  return <span className="tabular-nums">{formattedValue}</span>;
 }
 
 export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: { initialTeams: Team[], initialLogs: HistoryLog[], kioskMode?: boolean }) {
