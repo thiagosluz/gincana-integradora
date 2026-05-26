@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase/client';
 import type { Team, HistoryLog } from '@/types';
 import { Trophy } from 'lucide-react';
 import { PublicFeed } from './PublicFeed';
+import confetti from 'canvas-confetti';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 // Arcade counter component
 function AnimatedCounter({ value }: { value: number }) {
@@ -45,6 +47,18 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
   );
   const [logs, setLogs] = useState<HistoryLog[]>(initialLogs || []);
   const [lastUpdate, setLastUpdate] = useState<{ teamId: string; points: number } | null>(null);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  const handleCardClick = (isFirst: boolean) => {
+    if (isFirst && isMobile) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        zIndex: 9999
+      });
+    }
+  };
 
   useEffect(() => {
     // Busca a lista atualizada de equipes
@@ -122,8 +136,8 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                   damping: 25,
                   mass: 1,
                 }}
-                className={`card-brutal overflow-hidden relative flex items-center p-4 ${isFirst ? 'py-8 border-4' : 'py-4 border-2'
-                  }`}
+                onClick={() => handleCardClick(isFirst)}
+                className={`card-brutal overflow-hidden relative flex items-center p-4 ${isFirst ? 'py-8 border-4' : 'py-4 border-2'} ${isFirst && isMobile ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
                 style={{ backgroundColor: isFirst ? 'var(--background)' : 'white' }}
               >
                 {/* Background Color Block for 1st Place */}
