@@ -75,7 +75,7 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
             setLastUpdate({ teamId: newLog.team_id, points: newLog.points });
             setTimeout(() => setLastUpdate(null), 3000);
           }
-          
+
           // Sempre recarrega as equipes para garantir precisão (lida com exclusões e edições também)
           fetchTeams();
           fetchLogs();
@@ -122,9 +122,8 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                   damping: 25,
                   mass: 1,
                 }}
-                className={`card-brutal overflow-hidden relative flex items-center p-4 ${
-                  isFirst ? 'py-8 border-4' : 'py-4 border-2'
-                }`}
+                className={`card-brutal overflow-hidden relative flex items-center p-4 ${isFirst ? 'py-8 border-4' : 'py-4 border-2'
+                  }`}
                 style={{ backgroundColor: isFirst ? 'var(--background)' : 'white' }}
               >
                 {/* Background Color Block for 1st Place */}
@@ -161,12 +160,16 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
 
                 <div className="ml-2 md:ml-4 flex-grow z-10">
                   <h2
-                    className={`font-bold uppercase tracking-tight ${
-                      isFirst ? 'text-xl md:text-3xl' : 'text-lg md:text-xl'
-                    }`}
+                    className={`font-bold uppercase tracking-tight ${isFirst ? 'text-xl md:text-3xl' : 'text-lg md:text-xl'
+                      }`}
                   >
                     {team.name}
                   </h2>
+                  {team.honoree_name && (
+                    <p className="text-xs md:text-sm font-medium uppercase text-zinc-500 mt-0.5">
+                      Equipe: {team.honoree_name}
+                    </p>
+                  )}
                   {isCloseMatch && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
@@ -190,9 +193,8 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                     </motion.span>
                   )}
                   <div
-                    className={`font-mono font-bold text-right tabular-nums tracking-tighter ${
-                      isFirst ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'
-                    }`}
+                    className={`font-mono font-bold text-right tabular-nums tracking-tighter ${isFirst ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'
+                      }`}
                   >
                     <AnimatedCounter value={team.total_score} />
                   </div>

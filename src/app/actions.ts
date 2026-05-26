@@ -215,19 +215,20 @@ export async function manageTeam(formData: FormData) {
   const id = formData.get('id') as string;
   const name = formData.get('name') as string;
   const color = formData.get('color') as string;
+  const honoree_name = formData.get('honoree_name') as string;
   const action = formData.get('action') as string;
 
   if (!name || !color) return { success: false, error: 'Preencha todos os campos' };
 
   if (action === 'create') {
-    const { error } = await supabaseAdmin.from('teams').insert({ name, color });
+    const { error } = await supabaseAdmin.from('teams').insert({ name, color, honoree_name });
     if (error) {
       console.error(error);
       return { success: false, error: 'Erro ao criar equipe' };
     }
   } else if (action === 'update') {
     if (!id) return { success: false, error: 'ID da equipe não informado' };
-    const { error } = await supabaseAdmin.from('teams').update({ name, color }).eq('id', id);
+    const { error } = await supabaseAdmin.from('teams').update({ name, color, honoree_name }).eq('id', id);
     if (error) {
       console.error(error);
       return { success: false, error: 'Erro ao atualizar equipe' };

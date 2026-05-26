@@ -58,6 +58,17 @@ export function TeamForm({ teams }: { teams: Team[] }) {
           </div>
 
           <div className="flex flex-col gap-2">
+            <label className="font-bold uppercase text-sm">Homenageada (Opcional)</label>
+            <input
+              type="text"
+              name="honoree_name"
+              defaultValue={editingTeam?.honoree_name || ''}
+              placeholder="Ex: Marta Silva"
+              className="border-brutal p-3 font-mono bg-white focus:outline-none w-full"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
             <label className="font-bold uppercase text-sm">Cor (HEX)</label>
             <div className="flex gap-2">
               <input
