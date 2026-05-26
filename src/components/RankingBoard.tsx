@@ -103,7 +103,7 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
   }, []);
 
   return (
-    <div className={`w-full mx-auto p-4 flex flex-col gap-4 relative mt-4 ${kioskMode ? 'max-w-4xl mt-12' : 'max-w-md'}`}>
+    <div className={`w-full mx-auto p-4 flex flex-col gap-4 relative md:mt-4 ${kioskMode ? 'max-w-4xl mt-12' : 'max-w-md'}`}>
       <div className="flex flex-col items-center mb-6 gap-3">
         <div className="bg-black text-white px-4 py-1.5 border-brutal shadow-brutal transform -rotate-1">
           <h2 className="text-sm font-bold uppercase tracking-wider text-center">

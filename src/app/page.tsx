@@ -32,7 +32,7 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--background)] py-12 px-4 flex flex-col items-center">
+    <main className="min-h-screen bg-[var(--background)] py-4 md:py-12 px-4 flex flex-col items-center">
       <RankingBoard initialTeams={teams as Team[]} initialLogs={logs as unknown as HistoryLog[]} />
     </main>
   );
