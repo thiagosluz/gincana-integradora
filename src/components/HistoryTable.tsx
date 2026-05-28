@@ -17,6 +17,42 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [sortConfig, setSortConfig] = useState<{ key: 'date' | 'activity' | 'team'; direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedLogs = [...logs].sort((a, b) => {
+    if (!sortConfig) return 0;
+    
+    let aVal = '';
+    let bVal = '';
+
+    if (sortConfig.key === 'date') {
+      aVal = a.created_at;
+      bVal = b.created_at;
+    } else if (sortConfig.key === 'activity') {
+      aVal = a.activities?.name || '';
+      bVal = b.activities?.name || '';
+    } else if (sortConfig.key === 'team') {
+      aVal = a.teams?.name || '';
+      bVal = b.teams?.name || '';
+    }
+
+    if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (key: 'date' | 'activity' | 'team') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key: 'date' | 'activity' | 'team') => {
+    if (!sortConfig || sortConfig.key !== key) return <span className="opacity-30 ml-1">↕</span>;
+    return sortConfig.direction === 'asc' ? <span className="ml-1">↑</span> : <span className="ml-1">↓</span>;
+  };
 
   const handleDelete = async (id: string) => {
     setDeleteConfirmId(null); // Fecha o modal
@@ -44,6 +80,31 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
       setError(res.error || 'Erro ao atualizar');
     }
     setLoading(null);
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['Data/Hora', 'Atividade', 'Equipe', 'Pontos'];
+    const rows = logs.map(log => [
+      new Date(log.created_at).toLocaleString('pt-BR').replace(',', ''),
+      `"${log.activities?.name || 'Desconhecida'}"`,
+      `"${log.teams?.name || 'Deletada'}"`,
+      log.points.toString().replace('.', ',')
+    ]);
+
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(e => e.join(';'))
+    ].join('\n');
+
+    // Add BOM for Excel UTF-8 compatibility
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `historico_gincana_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -75,7 +136,16 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
       )}
 
       <div className="card-brutal p-6 overflow-x-auto w-full">
-        <h2 className="text-2xl font-bold uppercase mb-6 border-b-4 border-black pb-4">Histórico de Lançamentos</h2>
+        <div className="flex justify-between items-center mb-6 border-b-4 border-black pb-4">
+          <h2 className="text-2xl font-bold uppercase">Histórico de Lançamentos</h2>
+          <button
+            onClick={handleExportCSV}
+            disabled={logs.length === 0}
+            className="border-brutal bg-[#eab308] text-black px-4 py-2 font-bold uppercase text-sm hover:bg-[#ca8a04] transition-colors shadow-brutal active:translate-y-1 active:shadow-none cursor-pointer disabled:opacity-50"
+          >
+            Exportar CSV
+          </button>
+        </div>
         
         {error && <p className="text-red-500 font-bold bg-red-100 p-2 border-2 border-red-500 mb-4">{error}</p>}
 
@@ -85,15 +155,15 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr className="border-b-4 border-black bg-zinc-100 uppercase text-xs">
-                <th className="p-3">Data/Hora</th>
-                <th className="p-3">Atividade</th>
-                <th className="p-3">Equipe</th>
+                <th className="p-3 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('date')}>Data/Hora {getSortIcon('date')}</th>
+                <th className="p-3 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('activity')}>Atividade {getSortIcon('activity')}</th>
+                <th className="p-3 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('team')}>Equipe {getSortIcon('team')}</th>
                 <th className="p-3 text-right">Pontos</th>
                 <th className="p-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {logs.map((log) => {
+              {sortedLogs.map((log) => {
                 const isEditing = editingId === log.id;
                 const isProcessing = loading === log.id;
                 

@@ -5,6 +5,42 @@ import type { HistoryLog } from '@/types';
 
 export function PublicFeed({ logs, kioskMode }: { logs: HistoryLog[], kioskMode?: boolean }) {
   const [showModal, setShowModal] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{ key: 'date' | 'activity' | 'team'; direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedLogs = [...logs].sort((a, b) => {
+    if (!sortConfig) return 0;
+    
+    let aVal = '';
+    let bVal = '';
+
+    if (sortConfig.key === 'date') {
+      aVal = a.created_at;
+      bVal = b.created_at;
+    } else if (sortConfig.key === 'activity') {
+      aVal = a.activities?.name || '';
+      bVal = b.activities?.name || '';
+    } else if (sortConfig.key === 'team') {
+      aVal = a.teams?.name || '';
+      bVal = b.teams?.name || '';
+    }
+
+    if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (key: 'date' | 'activity' | 'team') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key: 'date' | 'activity' | 'team') => {
+    if (!sortConfig || sortConfig.key !== key) return <span className="opacity-30">↕</span>;
+    return sortConfig.direction === 'asc' ? <span>↑</span> : <span>↓</span>;
+  };
   
   // Exibe apenas os últimos 5
   const recentLogs = logs.slice(0, 5);
@@ -65,14 +101,14 @@ export function PublicFeed({ logs, kioskMode }: { logs: HistoryLog[], kioskMode?
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="border-b-2 border-black bg-zinc-100 uppercase text-xs">
-                    <th className="p-2">Data/Hora</th>
-                    <th className="p-2">Equipe</th>
-                    <th className="p-2">Atividade</th>
+                    <th className="p-2 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('date')}>Data/Hora {getSortIcon('date')}</th>
+                    <th className="p-2 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('team')}>Equipe {getSortIcon('team')}</th>
+                    <th className="p-2 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('activity')}>Atividade {getSortIcon('activity')}</th>
                     <th className="p-2 text-right">Pontos</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {logs.map((log) => (
+                  {sortedLogs.map((log) => (
                     <tr key={log.id} className="border-b border-zinc-300 hover:bg-zinc-50">
                       <td className="p-2 font-mono text-xs opacity-80">
                         {new Date(log.created_at).toLocaleString('pt-BR')}
