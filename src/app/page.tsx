@@ -23,6 +23,12 @@ export default async function Home() {
     `)
     .order('created_at', { ascending: false });
 
+  const { data: settingsData } = await supabase
+    .from('settings')
+    .select('*')
+    .eq('id', 1)
+    .single();
+
   if (teamsError || logsError) {
     console.error('Error fetching data:', teamsError || logsError);
     return (
@@ -34,7 +40,11 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[var(--background)] py-4 md:py-12 px-4 flex flex-col items-center">
-      <RankingBoard initialTeams={teams as Team[]} initialLogs={logs as unknown as HistoryLog[]} />
+      <RankingBoard 
+        initialTeams={teams as Team[]} 
+        initialLogs={logs as unknown as HistoryLog[]} 
+        initialSettings={settingsData || null}
+      />
     </main>
   );
 }

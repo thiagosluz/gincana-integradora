@@ -315,3 +315,28 @@ export async function updateScoreLog(formData: FormData) {
   revalidatePath('/');
   return { success: true };
 }
+
+export async function toggleGincanaStatus(formData: FormData) {
+  const adminToken = (await cookies()).get('admin_token');
+  if (adminToken?.value !== 'true') throw new Error('Não autorizado');
+
+  const isFinalized = formData.get('is_finalized') === 'true';
+  const finalMessage = formData.get('final_message') as string;
+
+  const { error } = await supabaseAdmin
+    .from('settings')
+    .update({ 
+      is_finalized: isFinalized, 
+      final_message: finalMessage || 'Obrigado a todos pela participação na Gincana!',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', 1);
+
+  if (error) {
+    console.error(error);
+    throw new Error('Erro ao atualizar configurações');
+  }
+
+  revalidatePath('/admin/configuracoes');
+  revalidatePath('/');
+}

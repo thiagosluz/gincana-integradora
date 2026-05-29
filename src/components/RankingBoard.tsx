@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase/client';
-import type { Team, HistoryLog } from '@/types';
+import type { Team, HistoryLog, Settings } from '@/types';
 import { Trophy } from 'lucide-react';
 import { PublicFeed } from './PublicFeed';
+import { Podium } from './Podium';
 import confetti from 'canvas-confetti';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
@@ -43,11 +44,12 @@ function AnimatedCounter({ value }: { value: number }) {
   return <span className="tabular-nums">{formattedValue}</span>;
 }
 
-export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: { initialTeams: Team[], initialLogs: HistoryLog[], kioskMode?: boolean }) {
+export function RankingBoard({ initialTeams, initialLogs, initialSettings, kioskMode = false }: { initialTeams: Team[], initialLogs: HistoryLog[], initialSettings?: Settings | null, kioskMode?: boolean }) {
   const [teams, setTeams] = useState<Team[]>(
     [...initialTeams].sort((a, b) => b.total_score - a.total_score)
   );
   const [logs, setLogs] = useState<HistoryLog[]>(initialLogs || []);
+  const [settings, setSettings] = useState<Settings | null>(initialSettings || null);
   const [lastUpdate, setLastUpdate] = useState<{ teamId: string; points: number } | null>(null);
   const [positionChanges, setPositionChanges] = useState<Record<string, number>>({});
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -121,25 +123,62 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
       )
       .subscribe();
 
+    const settingsSubscription = supabase
+      .channel('public:settings')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'settings' },
+        (payload) => {
+          setSettings(payload.new as Settings);
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(subscription);
+      supabase.removeChannel(settingsSubscription);
     };
   }, []);
 
+  const containerClass = settings?.is_finalized 
+    ? 'max-w-6xl'
+    : (kioskMode ? 'max-w-4xl mt-12' : 'max-w-md');
+
   return (
-    <div className={`w-full mx-auto p-4 flex flex-col gap-4 relative md:mt-4 ${kioskMode ? 'max-w-4xl mt-12' : 'max-w-md'}`}>
-      <div className="flex flex-col items-center mb-6 gap-3">
+    <div className={`w-full mx-auto p-4 flex flex-col gap-4 relative md:mt-4 ${containerClass}`}>
+      <div className={`flex flex-col items-center ${settings?.is_finalized ? 'mb-0 md:mb-6' : 'mb-6'} gap-3`}>
         <div className="bg-black text-white px-4 py-1.5 border-brutal shadow-brutal transform -rotate-1">
           <h2 className="text-sm font-bold uppercase tracking-wider text-center">
             3º Gincana Integradora do IFG Câmpus Jataí
           </h2>
         </div>
-        <h1 className="text-5xl font-black uppercase tracking-tighter text-center border-brutal bg-white p-4 shadow-brutal inline-block transform rotate-1">
-          Ranking
-        </h1>
+        {!settings?.is_finalized && (
+          <h1 className="text-5xl font-black uppercase tracking-tighter text-center border-brutal bg-white p-4 shadow-brutal inline-block transform rotate-1">
+            Ranking
+          </h1>
+        )}
       </div>
 
-      <div className="flex flex-col gap-4 relative">
+      <AnimatePresence>
+        {settings?.is_finalized && (
+          <motion.div
+            key="podium"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 1 }}
+            className="w-full overflow-hidden"
+          >
+            <Podium teams={teams} finalMessage={settings.final_message} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className={`flex flex-col gap-4 relative ${settings?.is_finalized ? 'max-w-md mx-auto w-full mt-8' : ''}`}>
+        {settings?.is_finalized && (
+          <h1 className="text-3xl font-black uppercase tracking-tighter text-center border-brutal bg-white p-2 shadow-brutal inline-block transform rotate-1 mb-4 mx-auto table">
+            Ranking
+          </h1>
+        )}
         <AnimatePresence>
           {teams.map((team, index) => {
             const maxScore = teams.length > 0 ? teams[0].total_score : 0;
@@ -161,7 +200,7 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                   mass: 1,
                 }}
                 onClick={() => handleCardClick(isFirst)}
-                className={`card-brutal overflow-hidden relative flex items-center p-4 ${isFirst ? 'py-8 border-4' : 'py-4 border-2'} ${isFirst && isMobile ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+                className={`card-brutal overflow-hidden relative flex items-center p-4 ${isFirst ? 'py-8 border-4' : 'py-4 border-2'} ${isFirst ? 'md:cursor-default cursor-pointer md:active:scale-100 active:scale-95 transition-transform' : ''}`}
                 style={{ backgroundColor: isFirst ? 'var(--background)' : 'white' }}
               >
                 {/* Background Color Block for 1st Place */}

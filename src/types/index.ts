@@ -29,3 +29,9 @@ export type HistoryLog = {
   teams: { id: string; name: string; color: string };
   activities: { id: string; name: string };
 };
+
+export type Settings = {
+  id: number;
+  is_finalized: boolean;
+  final_message: string;
+};

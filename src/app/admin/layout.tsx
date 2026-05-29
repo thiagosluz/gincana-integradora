@@ -43,6 +43,10 @@ export default async function AdminLayout({
           <Link href="/admin/equipes" className="border-brutal bg-blue-200 text-black p-2 text-sm font-bold uppercase text-center hover:bg-blue-300 transition-colors shadow-brutal active:translate-y-1 active:shadow-none">
             Equipes
           </Link>
+          <div className="mt-4 mb-2 border-b-2 border-black"></div>
+          <Link href="/admin/configuracoes" className="border-brutal bg-purple-200 text-black p-2 text-sm font-bold uppercase text-center hover:bg-purple-300 transition-colors shadow-brutal active:translate-y-1 active:shadow-none">
+            Configurações
+          </Link>
         </nav>
 
         <LogoutButton />
