@@ -86,6 +86,8 @@ export function Podium({ teams, finalMessage }: PodiumProps) {
     );
   };
 
+  const firstPlaceColor = top4[0]?.color || '#facc15';
+
   return (
     <div className="w-full flex flex-col items-center pt-2 pb-8 px-2 md:py-8 md:px-4 overflow-hidden relative">
 
@@ -93,9 +95,13 @@ export function Podium({ teams, finalMessage }: PodiumProps) {
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', bounce: 0.6, delay: 0.2 }}
-        className="bg-black text-white px-8 py-4 border-4 border-yellow-400 shadow-[6px_6px_0px_0px_#facc15] transform -rotate-2 mb-8 md:mb-16 z-20"
+        className="bg-black text-white px-8 py-4 border-4 transform -rotate-2 mb-8 md:mb-16 z-20"
+        style={{ borderColor: firstPlaceColor, boxShadow: `6px 6px 0px 0px ${firstPlaceColor}` }}
       >
-        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-center text-yellow-400">
+        <h1 
+          className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-center"
+          style={{ color: firstPlaceColor }}
+        >
           Grande Campeã
         </h1>
       </motion.div>
