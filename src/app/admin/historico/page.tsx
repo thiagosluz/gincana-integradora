@@ -10,6 +10,7 @@ export default async function HistoricoPage() {
     .select(`
       id,
       points,
+      description,
       created_at,
       teams (id, name, color),
       activities (id, name)

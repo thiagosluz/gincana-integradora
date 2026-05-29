@@ -6,6 +6,7 @@ import { deleteScoreLog, updateScoreLog } from '@/app/actions';
 type HistoryLog = {
   id: string;
   points: number;
+  description?: string | null;
   created_at: string;
   teams: { id: string; name: string; color: string };
   activities: { id: string; name: string };
@@ -83,11 +84,12 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
   };
 
   const handleExportCSV = () => {
-    const headers = ['Data/Hora', 'Atividade', 'Equipe', 'Pontos'];
+    const headers = ['Data/Hora', 'Atividade', 'Equipe', 'Motivo', 'Pontos'];
     const rows = logs.map(log => [
       new Date(log.created_at).toLocaleString('pt-BR').replace(',', ''),
       `"${log.activities?.name || 'Desconhecida'}"`,
       `"${log.teams?.name || 'Deletada'}"`,
+      `"${log.description || ''}"`,
       log.points.toString().replace('.', ',')
     ]);
 
@@ -158,6 +160,7 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
                 <th className="p-3 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('date')}>Data/Hora {getSortIcon('date')}</th>
                 <th className="p-3 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('activity')}>Atividade {getSortIcon('activity')}</th>
                 <th className="p-3 cursor-pointer hover:bg-zinc-200 select-none" onClick={() => handleSort('team')}>Equipe {getSortIcon('team')}</th>
+                <th className="p-3">Motivo</th>
                 <th className="p-3 text-right">Pontos</th>
                 <th className="p-3 text-right">Ações</th>
               </tr>
@@ -182,6 +185,9 @@ export function HistoryTable({ logs }: { logs: HistoryLog[] }) {
                       >
                         {log.teams?.name || 'Deletada'}
                       </span>
+                    </td>
+                    <td className="p-3 text-xs opacity-70 max-w-[150px] truncate" title={log.description || ''}>
+                      {log.description || '—'}
                     </td>
                     <td className="p-3 text-right font-mono text-lg font-bold">
                       {isEditing ? (

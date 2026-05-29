@@ -16,6 +16,7 @@ export default async function Home() {
     .select(`
       id,
       points,
+      description,
       created_at,
       teams (id, name, color),
       activities (id, name)

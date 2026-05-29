@@ -53,6 +53,16 @@ export function BatchScoreForm({ teams, activities }: { teams: Team[], activitie
           )}
         </div>
 
+        <div className="flex flex-col gap-2">
+          <label className="font-bold uppercase text-sm">Motivo / Observação <span className="font-normal opacity-50">(opcional)</span></label>
+          <input
+            type="text"
+            name="description"
+            placeholder="Ex: Penalidade por atraso, Bonificação especial..."
+            className="border-brutal p-3 bg-white focus:outline-none"
+          />
+        </div>
+
         <div className="border-t-2 border-black pt-6 flex flex-col gap-4">
           <h3 className="font-black uppercase text-lg">Pontuação por Equipe</h3>
           <p className="text-sm opacity-70 mb-2">Digite os pontos que cada equipe ganhou nesta atividade. Deixe 0 se não pontuou.</p>

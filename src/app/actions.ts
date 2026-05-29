@@ -132,6 +132,7 @@ export async function addBatchScores(formData: FormData) {
   if (adminToken?.value !== 'true') return { success: false, error: 'Não autorizado' };
 
   const activityId = formData.get('activityId') as string;
+  const description = (formData.get('description') as string) || null;
   if (!activityId) return { success: false, error: 'Selecione uma atividade' };
 
   // Fetch current teams to do the math safely
@@ -160,7 +161,8 @@ export async function addBatchScores(formData: FormData) {
     inserts.push({
       team_id: team.id,
       activity_id: activityId,
-      points: points
+      points: points,
+      description: description
     });
   }
 

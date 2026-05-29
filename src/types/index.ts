@@ -24,6 +24,7 @@ export type ScoreLog = {
 export type HistoryLog = {
   id: string;
   points: number;
+  description?: string | null;
   created_at: string;
   teams: { id: string; name: string; color: string };
   activities: { id: string; name: string };

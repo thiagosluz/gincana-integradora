@@ -49,6 +49,7 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
   );
   const [logs, setLogs] = useState<HistoryLog[]>(initialLogs || []);
   const [lastUpdate, setLastUpdate] = useState<{ teamId: string; points: number } | null>(null);
+  const [positionChanges, setPositionChanges] = useState<Record<string, number>>({});
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   const handleCardClick = (isFirst: boolean) => {
@@ -66,14 +67,35 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
     // Busca a lista atualizada de equipes
     const fetchTeams = async () => {
       const { data } = await supabase.from('teams').select('*').order('total_score', { ascending: false });
-      if (data) setTeams(data);
+      if (data) {
+        setTeams(prev => {
+          // Calculate position changes
+          const prevOrder = prev.map(t => t.id);
+          const newOrder = data.map((t: Team) => t.id);
+          const changes: Record<string, number> = {};
+          
+          newOrder.forEach((id: string, newIdx: number) => {
+            const oldIdx = prevOrder.indexOf(id);
+            if (oldIdx !== -1 && oldIdx !== newIdx) {
+              changes[id] = oldIdx - newIdx; // positive = moved up
+            }
+          });
+
+          if (Object.keys(changes).length > 0) {
+            setPositionChanges(changes);
+            setTimeout(() => setPositionChanges({}), 5000);
+          }
+
+          return data;
+        });
+      }
     };
 
     // Busca a lista atualizada de logs
     const fetchLogs = async () => {
       const { data } = await supabase
         .from('score_logs')
-        .select('id, points, created_at, teams (id, name, color), activities (id, name)')
+        .select('id, points, description, created_at, teams (id, name, color), activities (id, name)')
         .order('created_at', { ascending: false });
       if (data) setLogs(data as unknown as HistoryLog[]);
     };
@@ -175,12 +197,28 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
                 />
 
                 <div className="ml-2 md:ml-4 flex-grow z-10">
-                  <h2
-                    className={`font-bold uppercase tracking-tight ${isFirst ? 'text-xl md:text-3xl' : 'text-lg md:text-xl'
-                      }`}
-                  >
-                    {team.name}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2
+                      className={`font-bold uppercase tracking-tight ${isFirst ? 'text-xl md:text-3xl' : 'text-lg md:text-xl'
+                        }`}
+                    >
+                      {team.name}
+                    </h2>
+                    {positionChanges[team.id] && (
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.5, y: positionChanges[team.id] > 0 ? 10 : -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className={`text-xs font-black px-1.5 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] ${
+                          positionChanges[team.id] > 0
+                            ? 'bg-green-400 text-green-900'
+                            : 'bg-red-400 text-red-900'
+                        }`}
+                      >
+                        {positionChanges[team.id] > 0 ? `▲+${positionChanges[team.id]}` : `▼${positionChanges[team.id]}`}
+                      </motion.span>
+                    )}
+                  </div>
                   {team.honoree_name && (
                     <p className="text-xs md:text-sm font-medium uppercase text-zinc-500 mt-0.5">
                       Equipe: {team.honoree_name}
@@ -221,7 +259,7 @@ export function RankingBoard({ initialTeams, initialLogs, kioskMode = false }: {
         </AnimatePresence>
       </div>
 
-      <PublicFeed logs={logs} kioskMode={kioskMode} />
+      <PublicFeed logs={logs} teams={teams} kioskMode={kioskMode} />
     </div>
   );
 }
